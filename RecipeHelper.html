@@ -1,0 +1,478 @@
+<!-- Created by Andrew Battles -->
+
+<!DOCTYPE html>
+<html lang = "en">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+  </head>
+  <body>
+
+    <div id="main"></div>
+
+  </body>
+
+
+  <script type="text/babel">
+    const gramsPerCup = [{'name':'Baking Soda','val':221},
+                      {'name':'Butter','val':227},
+                      {'name':'Buttermilk','val':245},
+                      {'name':'Flour','val':125},
+                      {'name':'Gelatine','val':227},
+                      {'name':'Olive Oil','val':216},
+                      {'name':'Vegetable Oil','val':218},
+                      {'name':'Peanut Butter','val':258},
+                      {'name':'Rice','val':185},
+                      {'name':'Salt','val':292},
+                      {'name':'Shortening','val':205},
+                      {'name':'Brown Sugar','val':220},
+                      {'name':'Sugar','val':200},
+                      {'name':'Powdered Sugar','val':120},
+                      {'name':'Vanilla Extract','val':208},
+                      {'name':'Water','val':237},
+                      {'name':'Yeast','val':224},
+                      {'name':'OTHER','val':1}];
+
+    const ingredients = ['Baking Soda',
+                      'Butter',
+                      'Buttermilk',
+                      'Flour',
+                      'Gelatine',
+                      'Olive Oil',
+                      'Vegetable Oil',
+                      'Peanut Butter',
+                      'Rice',
+                      'Salt',
+                      'Shortening',
+                      'Brown Sugar',
+                      'Sugar',
+                      'Powdered Sugar',
+                      'Vanilla Extract',
+                      'Water',
+                      'Yeast',
+                      'OTHER'];
+
+      const measurements = ['cups',
+                          'fl-oz',
+                          'tbsp',
+                          'tsp',
+                          'ml',
+                          'g'];
+
+      const cups = [{'name':'cups','val':1},
+                  {'name':'fl-oz','val':8},
+                  {'name':'tbsp','val': 16},
+                  {'name':'tsp','val': 48},
+                  {'name':'ml','val': 237}];
+
+      const defaultMultiplier = 1;
+
+      var ingredientCounter = 1;
+
+
+    class Dropdown extends React.Component {
+    constructor(props){
+     super(props);
+     this.state = {
+           displayMenu: false,
+           optionsList: props.options,
+           selected: props.selected
+
+         };
+
+         this.showDropdownMenu = this.showDropdownMenu.bind(this);
+         this.hideDropdownMenu = this.hideDropdownMenu.bind(this);
+    }
+
+
+    showDropdownMenu(event) {
+      //console.log(this.state.optionsList);
+        event.preventDefault();
+        this.setState({ displayMenu: true }, () => {
+        document.addEventListener('click', this.hideDropdownMenu);
+        });
+      }
+
+      hideDropdownMenu() {
+        if (this.dropdownMenu.contains(event.target)) {
+          this.setState({selected: event.target.attributes.name.value,
+                         displayMenu: false}, () => {
+                           document.removeEventListener('click', this.hideDropdownMenu);
+                           if (typeof this.props.changeFunction === 'function') {
+                             this.props.changeFunction(event.target.attributes.name.value);
+                           }
+                         })
+        }
+        else {
+          this.setState({ displayMenu: false }, () => {
+            document.removeEventListener('click', this.hideDropdownMenu);
+          });
+        }
+
+      }
+
+      returnLabel(){
+        return this.state.selected;
+      }
+
+      render() {
+        return (
+            <div className={this.props.narrow? "dropdown-narrow":"dropdown"} ref={(element) => {
+              this.dropdownMenu = element;
+            }}>
+             <div className={this.props.narrow? "dropdownbutton-narrow":"dropdownbutton"}
+                onClick={this.showDropdownMenu}>{this.state.selected}</div>
+              { this.state.displayMenu ?
+                (<ul>{this.state.optionsList.map( (option) =><li name={option}>{option}</li>)}</ul>) : (null)
+              }
+           </div>
+        );
+      }
+    }
+
+    class Ingredient extends React.Component {
+      constructor(props){
+        super(props);
+
+        this.state = {
+          id: this.props.id,
+          name: this.props.name,
+          num: this.props.num,
+          measure1: this.props.measure1,
+          measure2: this.props.measure2,
+          substance: this.props.substance,
+          multiplier: this.props.multiplier
+        }
+
+      }
+      componentDidMount(){
+        this.convert();
+      }
+      componentDidUpdate(prevProps,prevState){
+        //console.log("componentDidUpdate")
+        if (prevProps.multiplier != this.props.multiplier){
+          this.setState({multiplier: this.props.multiplier},
+            () => this.convert())
+        }
+      }
+
+      updateName = (name) => {
+        this.setState({name: name},() => {this.props.updateMainList(this.state)});
+      }
+
+      updateNumber = (number) => {
+        this.setState({num: number},() => {this.convert()});
+      }
+
+      updateMeasure1 = (measure) => {
+        //let isGrams = (measure == 'g');
+        this.setState({measure1: measure},() => {this.convert()});
+      }
+      updateMeasure2 = (measure) => {
+        //let isGrams = (measure == 'g');
+        this.setState({measure2: measure},() => {this.convert()});
+      }
+      updateSubstance = (substance) => {
+        this.setState({substance: substance},() => {this.convert()});
+      }
+
+      updateMultiplier = (newMult) => {
+        this.setState({multiplier: newMult},() => {this.convert()});
+      }
+
+      convert = () => {
+        let conversion = this.getConversion(this.refs.convertFrom.state.selected,this.refs.convertTo.state.selected)
+        //console.log(this.refs.convertFrom.state.selected)
+        this.setState({convertedNum: Math.floor(this.state.num*conversion*1000)/1000 + ' '+ this.refs.convertTo.state.selected},
+          this.props.updateMainList(this.state)
+        );
+      }
+
+      getConversion = (from,to) => {
+        //console.log('convert '+ from + ' to ' + to)
+        let toCups = 1/(from == 'g' ? this.returnValOfName(this.refs.type.state.selected,gramsPerCup) : this.returnValOfName(from,cups));
+        let toFinal = (to == 'g'? this.returnValOfName(this.refs.type.state.selected,gramsPerCup) : this.returnValOfName(to,cups));
+        return toCups*toFinal*this.state.multiplier;
+      }
+
+      returnValOfName = (lookFor,list) => {
+        for(let i=0;i<list.length;i++){
+          if(list[i].name == lookFor){
+            return list[i].val;
+          }
+        }
+        return 0;
+      }
+      deleteSelf = () => {
+        //console.log("deleting row: "+this.props.id)
+        this.props.deleteFunction(this.props.id)
+      }
+
+      render() {
+        return(
+          <div className='linewrap'>
+            <tr>
+              <td><input className="nameInput" type="textarea" placeholder="Ingredient Name" value={this.props.name} onChange={e => this.updateName(e.target.value)}/></td>
+              <td className="textSpace"> : </td>
+              <td><input className="numberInput" type='number' min={0} value={this.props.num} onChange={e => this.updateNumber(e.target.value)}/></td>
+              <td><Dropdown ref="convertFrom" selected={this.props.measure1} options={measurements} narrow={true} changeFunction={this.updateMeasure1}/></td>
+              <td className="textSpace"> to </td>
+              <td><Dropdown ref="convertTo" selected={this.props.measure2} options={measurements} narrow={true} changeFunction={this.updateMeasure2}/></td>
+              <td className={((this.state.measure1 == 'g' && this.state.measure2 != 'g') || (this.state.measure1 != 'g' && this.state.measure2 == 'g')) ? "":"hidden"}>
+                <Dropdown ref='type' selected={this.props.substance} options={ingredients} narrow={false} changeFunction={this.updateSubstance} />
+              </td>
+              <td>---></td>
+              <td><input readonly='true' className="resultCell" type="textarea" defaultValue={0} value={this.state.convertedNum}/></td>
+              <td><button type='button' onClick={() => this.deleteSelf()}>X</button></td>
+            </tr>
+          </div>
+        )
+      }
+    }
+
+    class List extends React.Component {
+      constructor(props){
+        super(props);
+
+        this.state = {
+          multiplier: defaultMultiplier,
+          rowCounter: 0,
+          ingredients: []
+        }
+      }
+      componentDidMount = () => {
+        this.createIngredient();
+      }
+
+      createIngredient = () => {
+        //console.log('create ingredient')
+        let newIngredient = {
+          id: "ingredient"+this.state.rowCounter,
+          name: "",
+          num: 1,
+          measure1: measurements[0],
+          measure2: measurements[0],
+          substance: ingredients[0],
+          result: 0
+        }
+        let currentList = this.state.ingredients;
+        currentList.push(newIngredient);
+        this.setState({rowCounter: this.state.rowCounter+1,
+                        ingredients: currentList}) //,() => {console.log(this.state.ingredients)})
+
+      }
+
+      updateIngredientsList = (newState) => {
+        let currentList = this.state.ingredients;
+
+        for (let i=0;i<currentList.length;i++){
+          if(currentList[i].id == newState.id){
+                //console.log("currentID: "+currentList[i].id)
+                //console.log("found "+newState.id+", updating.")
+                currentList[i].name = newState.name;
+                currentList[i].num = newState.num;
+                currentList[i].measure1 = newState.measure1;
+                currentList[i].measure2 = newState.measure2;
+                currentList[i].substance = newState.substance;
+                currentList[i].result = newState.result;
+          }
+        }
+        this.setState({ingredients: currentList})//,() => console.log(this.state.ingredients))
+      }
+
+      deleteIngredient = (id) => {
+        let rows = this.state.ingredients;
+        const filteredRows = rows.filter(row => row.id != id);
+        //this.setState({ingredients: filteredRows});
+        this.setState({ingredients: []},
+          () => this.setState({ingredients: filteredRows}));
+      }
+
+      updateMultiplier = (newMult) => {
+        //console.log("new multiplier: "+ newMult);
+        this.setState({multiplier: newMult})
+      }
+
+
+      render() {
+        return(
+          <div>
+            <h2>Recipe Multiplier</h2>
+            <h4>Upsize or downsize your recipe, and convert between measures</h4>
+            <div>
+              <tr className='linewrap'><td>Multiplier:</td><td><input type="number" className="numberInput" defaultValue={defaultMultiplier} onChange={e => this.updateMultiplier(e.target.value)}/></td></tr>
+              {this.state.ingredients.map(ingredient => (
+                  <Ingredient id={ingredient.id}
+                              name={ingredient.name}
+                              num={ingredient.num}
+                              measure1={ingredient.measure1}
+                              measure2={ingredient.measure2}
+                              substance={ingredient.substance}
+                              multiplier={this.state.multiplier}
+                              deleteFunction={this.deleteIngredient}
+                              updateMainList={this.updateIngredientsList} />
+              ))}
+            </div>
+            <div id='buttonDiv'>
+              <button type='button' onClick={e => this.createIngredient()}>Add Ingredient</button>
+            </div>
+            <div style={{bottom:5, position:'absolute', width:'95%'}}>
+              <span style={{'float': 'left'}}>*When converting between volume and grams, select ingredient type from dropdown for correct conversion</span>
+            </div>
+          </div>
+        )
+      }
+    }
+        //<tr><td>Multiplier:</td><td><input type="number" className="numberInput" defaultValue={defaultMultiplier} onChange={e => this.updateMultiplier(e.target.value)}/></td></tr>
+    ReactDOM.render(
+      <div id='background'>
+        <List />
+      </div>,
+      document.getElementById("main")
+    );
+
+  </script>
+
+
+  <style>
+
+  .hidden {
+    display:none;
+  }
+
+  .numberInput {
+    width: 50px;
+    height: 30px;
+  }
+
+  .nameInput {
+    width: 100px;
+    height: 30px;
+  }
+
+  .textSpace {
+    margin: 5px;
+    padding: 10px 5px;
+    text-align: center;
+  }
+
+  .resultCell {
+    width:100px;
+    height: 30px;
+    border:solid;
+    text-align: center;
+    font-size: 15px;
+  }
+
+  .linewrap {
+    margin-bottom: 10px;
+    margin-top: 10px;
+  }
+
+.dropdown {
+     width: 150px;
+     background-color: #DCDAD1;
+     position: relative;
+     display: inline-block;
+}
+
+.dropdown-narrow {
+     width: 80px;
+     background-color: #DCDAD1;
+     position: relative;
+     display: inline-block;
+}
+
+.dropdown-narrow ul {
+  width: 80px;
+}
+
+
+
+ ul {
+     list-style-type: none;
+     margin: 0;
+     padding: 0;
+     top:50px;
+     right:0px;
+     width: 150px;
+     background-color: #DCDAD1;
+     position: absolute;
+     font-size: 15px;
+     box-shadow: 0px 8px 18px 0px rgba(0,0,0,0.2);
+     z-index: 1;
+}
+ li a {
+     color: black;
+     text-decoration: none;
+}
+ li {
+     padding: 8px 16px;
+     border-bottom: 1px solid #e5e5e5;
+     color:black;
+}
+ li:last-child {
+     border-bottom: none;
+}
+ li:hover {
+     background-color: #e5e5e5;
+     color: black;;
+}
+ .dropdownbutton{
+     width:150px;
+     height:18px;
+     padding:10px;
+     border-radius:5px;
+
+     color:black;
+}
+
+.dropdownbutton-narrow {
+    width:80px;
+    height:18px;
+    padding:10px;
+    border-radius:5px;
+
+    color:black;
+}
+.dropdownbutton:before {
+     content:"";
+     position:absolute;
+     width:0px;
+     height:0px;
+     border: 10px solid;
+     border-color: black transparent transparent transparent;
+     right:6px;
+     top:18px;
+}
+.dropdownbutton-narrow:before{
+     content:"";
+     position:absolute;
+     width:0px;
+     height:0px;
+     border: 10px solid;
+     border-color: black transparent transparent transparent;
+     right:6px;
+     top:18px;
+}
+
+body {
+  background-color: black;
+  color: white;
+  font-family: Verdana;
+}
+
+
+input {
+  height: 18px;
+}
+
+td {
+  vertical-align: middle;
+}
+
+  </style>
+
+</html>
