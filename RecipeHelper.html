@@ -1,5 +1,3 @@
-<!-- Created by Andrew Battles -->
-
 <!DOCTYPE html>
 <html lang = "en">
   <head>
@@ -16,50 +14,101 @@
 
 
   <script type="text/babel">
-    const gramsPerCup = [{'name':'Baking Soda','val':221},
-                      {'name':'Butter','val':227},
-                      {'name':'Buttermilk','val':245},
-                      {'name':'Flour','val':125},
-                      {'name':'Gelatine','val':227},
-                      {'name':'Olive Oil','val':216},
-                      {'name':'Vegetable Oil','val':218},
-                      {'name':'Peanut Butter','val':258},
+    const gramsPerCup = [
+                      {'name':'Water','val':237},
+                      {'name':'Baking Soda','val':240},
+                      {'name':'Baking Powder','val':235},
+                      {'name':'Salt (table)','val':322},
+                      {'name':'Yeast','val':224},
                       {'name':'Rice','val':185},
                       {'name':'Salt','val':292},
-                      {'name':'Shortening','val':205},
-                      {'name':'Brown Sugar','val':220},
-                      {'name':'Sugar','val':200},
-                      {'name':'Powdered Sugar','val':120},
+                      {'name':'Cinnamon','val':312},
+                      {'name':'Cream of Tartar','val':149},
+                      {'name':'Citrus Zest','val':96},
                       {'name':'Vanilla Extract','val':208},
-                      {'name':'Water','val':237},
-                      {'name':'Yeast','val':224},
+                      {'name':'Almond Extract','val':208},
+
+
+
+                      {'name':'Flour (all-purpose)','val':140},
+                      {'name':'Flour (King Arthur AP)','val':120},
+                      {'name':'Flour (cake)','val':114},
+                      {'name':'Flour (bread)','val':130},
+                      {'name':'Flour (whole wheat)','val':144},
+                      {'name':'Flour (almond)','val':89},
+
+                      {'name':'Sugar (granulated)','val':200},
+                      {'name':'Sugar (brown, light)','val':217},
+                      {'name':'Sugar (brown, dark)','val':239},
+                      {'name':'Sugar (powdered)','val':115},
+                      {'name':'Molasses','val':322},
+                      {'name':'Corn Syrup','val':328},
+                      {'name':'Maple Syrup','val':214},
+                      {'name':'Honey','val':345},
+
+                      {'name':'Butter','val':227},
+                      {'name':'Buttermilk','val':245},
+                      {'name':'Cream Cheese','val':256},
+                      {'name':'Shortening','val':191},
+                      {'name':'Sour Cream','val':240},
+                      {'name':'Coconut Oil (solid)','val':224},
+                      {'name':'Olive Oil','val':216},
+                      {'name':'Vegetable Oil','val':218},
+                      {'name':'Peanut Butter','val':266},
+
+                      {'name':'Corn Starch','val':120},
+                      {'name':'Cocoa (Dutch)','val':92},
+                      {'name':'Gelatin','val':148},
+                      {'name':'Pumpkin (canned)','val':240},
+                      {'name':'Rolled Oats','val':80},
+                      {'name':'Rice Crispies','val':25},
+                      {'name':'Chocolate Chips (mini)','val':175},
+                      {'name':'Chocolate Chips (Toll House)','val':180},
+                      {'name':'Chocolate Chips (Ghiradelli)','val':165},
+                      {'name':'Reeses PB Chips','val':156},
+                      {'name':'Butterscotch Chips','val':200},
+                      {'name':'Maple Chips','val':180},
+
+                      {'name':'Raisins','val':150},
+
+                      {'name':'Almonds (whole)','val':191},
+                      {'name':'Almonds (slivered)','val':120},
+                      {'name':'Almonds (sliced)','val':85},
+                      {'name':'Almonds (chopped)','val':85},
+                      {'name':'Almonds (ground)','val':107},
+                      {'name':'Hazelnuts (whole)','val':142},
+                      {'name':'Hazelnuts (chopped)','val':114},
+                      {'name':'Hazelnuts (ground)','val':107},
+                      {'name':'Pecans (halved)','val':100},
+                      {'name':'Pecans (chopped)','val':114},
+                      {'name':'Walnuts (halved)','val':100},
+                      {'name':'Walnuts (chopped)','val':114},
+
+                      {'name':'Coconut (shredded)','val':120},
+
+
+
+
                       {'name':'OTHER','val':1}];
 
-    const ingredients = ['Baking Soda',
-                      'Butter',
-                      'Buttermilk',
-                      'Flour',
-                      'Gelatine',
-                      'Olive Oil',
-                      'Vegetable Oil',
-                      'Peanut Butter',
-                      'Rice',
-                      'Salt',
-                      'Shortening',
-                      'Brown Sugar',
-                      'Sugar',
-                      'Powdered Sugar',
-                      'Vanilla Extract',
-                      'Water',
-                      'Yeast',
-                      'OTHER'];
+      const ingredients = gramsPerCup.map(measure => measure.name)
 
-      const measurements = ['cups',
+      const measurements = ['units',
+                          'cups',
                           'fl-oz',
                           'tbsp',
                           'tsp',
                           'ml',
-                          'g'];
+                          'g',
+                          'lb'];
+
+      const measurementsNoUnits = ['cups',
+                                  'fl-oz',
+                                  'tbsp',
+                                  'tsp',
+                                  'ml',
+                                  'g',
+                                  'lb'];
 
       const cups = [{'name':'cups','val':1},
                   {'name':'fl-oz','val':8},
@@ -67,10 +116,22 @@
                   {'name':'tsp','val': 48},
                   {'name':'ml','val': 237}];
 
+      const gramsPerLb = 453.6
+
       const defaultMultiplier = 1;
 
       var ingredientCounter = 1;
 
+
+/***************************************************
+Remaining Improvements:
+- custom name for recipe (add text field to Recipe widget)
+- add pound measures & logic
+- add additional ingredients
+- styling
+- loading?
+
+***************************************************/
 
     class Dropdown extends React.Component {
     constructor(props){
@@ -143,68 +204,78 @@
           measure1: this.props.measure1,
           measure2: this.props.measure2,
           substance: this.props.substance,
-          multiplier: this.props.multiplier
+          convert: this.props.convert
         }
-
       }
       componentDidMount(){
-        this.convert();
-      }
-      componentDidUpdate(prevProps,prevState){
-        //console.log("componentDidUpdate")
-        if (prevProps.multiplier != this.props.multiplier){
-          this.setState({multiplier: this.props.multiplier},
-            () => this.convert())
-        }
+        this.updateDisplay()
       }
 
       updateName = (name) => {
+        //console.log('updateName: '+name)
         this.setState({name: name},() => {this.props.updateMainList(this.state)});
       }
 
       updateNumber = (number) => {
-        this.setState({num: number},() => {this.convert()});
+        //console.log('updateNumber: '+num)
+        this.setState({num: number},() => {this.updateDisplay()});
       }
 
       updateMeasure1 = (measure) => {
-        //let isGrams = (measure == 'g');
-        this.setState({measure1: measure},() => {this.convert()});
-      }
-      updateMeasure2 = (measure) => {
-        //let isGrams = (measure == 'g');
-        this.setState({measure2: measure},() => {this.convert()});
-      }
-      updateSubstance = (substance) => {
-        this.setState({substance: substance},() => {this.convert()});
-      }
-
-      updateMultiplier = (newMult) => {
-        this.setState({multiplier: newMult},() => {this.convert()});
-      }
-
-      convert = () => {
-        let conversion = this.getConversion(this.refs.convertFrom.state.selected,this.refs.convertTo.state.selected)
-        //console.log(this.refs.convertFrom.state.selected)
-        this.setState({convertedNum: Math.floor(this.state.num*conversion*1000)/1000 + ' '+ this.refs.convertTo.state.selected},
-          this.props.updateMainList(this.state)
-        );
-      }
-
-      getConversion = (from,to) => {
-        //console.log('convert '+ from + ' to ' + to)
-        let toCups = 1/(from == 'g' ? this.returnValOfName(this.refs.type.state.selected,gramsPerCup) : this.returnValOfName(from,cups));
-        let toFinal = (to == 'g'? this.returnValOfName(this.refs.type.state.selected,gramsPerCup) : this.returnValOfName(to,cups));
-        return toCups*toFinal*this.state.multiplier;
-      }
-
-      returnValOfName = (lookFor,list) => {
-        for(let i=0;i<list.length;i++){
-          if(list[i].name == lookFor){
-            return list[i].val;
-          }
+        if(this.state.hideConvertBox && measure != 'units'){
+          this.setState({measure1: measure,
+                         measure2: measure},() => this.updateDisplay())
         }
-        return 0;
+        else {
+          this.setState({measure1: measure},() => this.updateDisplay())
+        }
+        //console.log('updateMeasure1: '+measure)
+
       }
+
+      updateMeasure2 = (measure) => {
+        //console.log('updateMeasure2: '+measure)
+        this.setState({measure2: measure},() => {this.updateDisplay()});
+      }
+
+      updateSubstance = (substance) => {
+        //console.log('updateSubstance: '+substance)
+        //if(this.state.name.length<1){
+          this.setState({ substance: substance,
+                          name: substance},() => {this.updateDisplay()});
+        /*}
+        else{
+          this.setState({substance: substance},() => {this.updateDisplay()});
+        }*/
+      }
+
+      updateConvert = (val) => {
+        //console.log('updateConversion: '+val)
+        this.setState({convert: val},() => {this.updateDisplay()});
+      }
+
+      areBothSame = (measure1, measure2) => {
+        //console.log('shouldShowGramList: '+measure1 + ','+measure2)
+        switch(measure1){
+          case 'g':
+          case 'lb':
+            return !(measure2 == 'g' || measure2 == 'lb')
+          default:
+            return (measure2 == 'g' || measure2 == 'lb')
+        }
+      }
+
+      updateDisplay = () => {
+        //console.log('updateDisplay')
+
+        let hideConvertBox = (this.state.measure1 == 'units');
+
+        let hideGramList = this.state.hideConvertBox || !this.state.convert || !this.areBothSame(this.state.measure1,this.state.measure2);
+
+        this.setState({hideGramList: hideGramList,
+                        hideConvertBox: hideConvertBox},() => this.props.updateMainList(this.state))
+      }
+
       deleteSelf = () => {
         //console.log("deleting row: "+this.props.id)
         this.props.deleteFunction(this.props.id)
@@ -212,26 +283,23 @@
 
       render() {
         return(
-          <div className='linewrap'>
-            <tr>
+            <tr style={{'width':'100%'}}>
               <td><input className="nameInput" type="textarea" placeholder="Ingredient Name" value={this.props.name} onChange={e => this.updateName(e.target.value)}/></td>
               <td className="textSpace"> : </td>
               <td><input className="numberInput" type='number' min={0} value={this.props.num} onChange={e => this.updateNumber(e.target.value)}/></td>
               <td><Dropdown ref="convertFrom" selected={this.props.measure1} options={measurements} narrow={true} changeFunction={this.updateMeasure1}/></td>
-              <td className="textSpace"> to </td>
-              <td><Dropdown ref="convertTo" selected={this.props.measure2} options={measurements} narrow={true} changeFunction={this.updateMeasure2}/></td>
-              <td className={((this.state.measure1 == 'g' && this.state.measure2 != 'g') || (this.state.measure1 != 'g' && this.state.measure2 == 'g')) ? "":"hidden"}>
+              <td><span className={this.state.hideConvertBox ? "hidden": "checkbox"}><label className='textSpace'><input type='checkbox' checked={this.props.convert} onChange={e => this.updateConvert(e.target.checked)}/>Convert {this.state.convert? ' to ' :''} </label></span></td>
+
+              <td>{this.state.convert?<Dropdown ref="convertTo" selected={this.state.measure2} options={measurementsNoUnits} narrow={true} changeFunction={this.updateMeasure2}/>:''}</td>
+              <td><span className={this.state.hideGramList ? "hidden": ""}>
                 <Dropdown ref='type' selected={this.props.substance} options={ingredients} narrow={false} changeFunction={this.updateSubstance} />
-              </td>
-              <td>---></td>
-              <td><input readonly='true' className="resultCell" type="textarea" defaultValue={0} value={this.state.convertedNum}/></td>
-              <td><button type='button' onClick={() => this.deleteSelf()}>X</button></td>
+              </span></td>
+              <td style={{'width':'90%'}}><button className='deleteButton' type='button' onClick={() => this.deleteSelf()}>X</button></td>
             </tr>
-          </div>
         )
       }
     }
-
+//              <td className="textSpace">{this.state.convert? ' to ' :''}</td>
     class List extends React.Component {
       constructor(props){
         super(props);
@@ -253,9 +321,9 @@
           name: "",
           num: 1,
           measure1: measurements[0],
-          measure2: measurements[0],
+          measure2: measurements[1],
           substance: ingredients[0],
-          result: 0
+          convert: false
         }
         let currentList = this.state.ingredients;
         currentList.push(newIngredient);
@@ -276,7 +344,8 @@
                 currentList[i].measure1 = newState.measure1;
                 currentList[i].measure2 = newState.measure2;
                 currentList[i].substance = newState.substance;
-                currentList[i].result = newState.result;
+                currentList[i].convert = newState.convert;
+                //currentList[i].result = newState.result;
           }
         }
         this.setState({ingredients: currentList})//,() => console.log(this.state.ingredients))
@@ -299,24 +368,31 @@
       render() {
         return(
           <div>
-            <h2>Recipe Multiplier</h2>
-            <h4>Upsize or downsize your recipe, and convert between measures</h4>
-            <div>
-              <tr className='linewrap'><td>Multiplier:</td><td><input type="number" className="numberInput" defaultValue={defaultMultiplier} onChange={e => this.updateMultiplier(e.target.value)}/></td></tr>
-              {this.state.ingredients.map(ingredient => (
-                  <Ingredient id={ingredient.id}
-                              name={ingredient.name}
-                              num={ingredient.num}
-                              measure1={ingredient.measure1}
-                              measure2={ingredient.measure2}
-                              substance={ingredient.substance}
-                              multiplier={this.state.multiplier}
-                              deleteFunction={this.deleteIngredient}
-                              updateMainList={this.updateIngredientsList} />
-              ))}
+            <div style={{'float':'left','min-width':'690px'}}>
+              <div>
+                <tr className='linewrap'><td>Multiplier:</td><td><input type="number" className="numberInput" defaultValue={defaultMultiplier} onChange={e => this.updateMultiplier(e.target.value)}/></td></tr>
+                <hr></hr>
+                <table>
+                  {this.state.ingredients.map(ingredient => (
+                      <Ingredient id={ingredient.id}
+                                  name={ingredient.name}
+                                  num={ingredient.num}
+                                  measure1={ingredient.measure1}
+                                  measure2={ingredient.measure2}
+                                  substance={ingredient.substance}
+                                  convert={ingredient.convert}
+                                  deleteFunction={this.deleteIngredient}
+                                  updateMainList={this.updateIngredientsList} />
+                  ))}
+                </table>
+                <hr></hr>
+              </div>
+              <div id='buttonDiv'>
+                <button type='button' onClick={e => this.createIngredient()}>Add Ingredient</button>
+              </div>
             </div>
-            <div id='buttonDiv'>
-              <button type='button' onClick={e => this.createIngredient()}>Add Ingredient</button>
+            <div className='recipe' >
+              <Recipe multiplier={this.state.multiplier} ingredients={this.state.ingredients}/>
             </div>
             <div style={{bottom:5, position:'absolute', width:'95%'}}>
               <span style={{'float': 'left'}}>*When converting between volume and grams, select ingredient type from dropdown for correct conversion</span>
@@ -325,10 +401,240 @@
         )
       }
     }
-        //<tr><td>Multiplier:</td><td><input type="number" className="numberInput" defaultValue={defaultMultiplier} onChange={e => this.updateMultiplier(e.target.value)}/></td></tr>
+
+    class Recipe extends React.Component {
+      constructor(props){
+        super(props);
+
+        this.state={
+          multiplier: this.props.multiplier || 1,
+          ingredients: this.props.rows || [],
+          useFractions: false
+
+        }
+      }
+      componentDidUpdate(prevProps,prevState){
+        if(this.props.multiplier != this.state.multiplier){
+          this.setState({multiplier: this.props.multiplier},() => this.updateRecipe())
+        }
+        if(this.props.ingredients != this.state.ingredients){
+          this.setState({ingredients: this.props.ingredients},() => this.updateRecipe())
+        }
+
+      }
+
+      writeRow = (row) => {
+        //console.log(row)
+        let conversion = (row.convert ? this.getConversion(row.measure1,row.measure2,row.substance) : this.state.multiplier)
+        //let str = ((row.measure2 == 'g' || row.measure2 == 'lb') ? conversion*row.num : this.toFraction(conversion*row.num));
+        let str = ''
+        if(this.state.useFractions && row.measure1 != 'units') {
+          str = this.toFraction(conversion*row.num)
+        }
+        else {
+          str = Math.round(conversion*row.num*1000)/1000;
+        }
+
+        if(row.measure1 == 'units'){
+          str += (' ' +row.name);
+        }
+        else {
+          //str += (' '+ row.measure2 + ' of ' + row.name)
+          str += (' '+ row.measure2 + ' ' + row.name)
+        }
+        return str;
+      }
+
+      updateRecipe = () => {
+        console.log('-- updating recipe --')
+      }
+
+      getConversion = (from,to,substance) => {
+        if(from == to){
+          //console.log('from = to')
+          return this.state.multiplier
+        }
+        else if(this.areBothWeight(from,to)){
+        //  console.log('newMultiplier: ' + (from == 'g' ? this.state.multiplier/gramsPerLb : this.state.multiplier*gramsPerLb))
+          return (from == 'g' ? Math.round(this.state.multiplier/gramsPerLb*100)/100 : Math.round(this.state.multiplier*gramsPerLb*100)/100)
+        }
+        else{
+          //console.log('convert '+ from + ' to ' + to)
+          let toCups = 1;
+          let toFinal = 1;
+          if(from =='g' || from == 'lb'){
+            let gramVal1 = this.returnValOfName(substance,gramsPerCup)
+            toCups = 1/(gramVal1*(from == 'lb'? 1/gramsPerLb : 1))
+          }
+          else {
+            toCups = 1/this.returnValOfName(from,cups);
+          }
+          //console.log('toCups: '+toCups)
+
+          if(to =='g' || to == 'lb'){
+            let gramVal2 = this.returnValOfName(substance,gramsPerCup)
+            toFinal = gramVal2*(to == 'lb'? 1/gramsPerLb : 1)
+            //return Math.round(toCups*toFinal*this.state.multiplier*1000)/1000;
+          }
+          else {
+            toFinal = this.returnValOfName(to,cups);
+            //return this.toFraction(toCups*toFinal*this.state.multiplier)
+          }
+          //console.log('toFinal: '+toFinal)
+
+          return toCups*toFinal*this.state.multiplier
+
+          /*if(to =='g' || to=='lb'){
+            return Math.round(toCups*toFinal*this.state.multiplier*1000)/1000;
+          }
+          else {
+            return this.toFraction(toCups*toFinal*this.state.multiplier)
+          }*/
+        }
+      }
+
+      returnValOfName = (lookFor,list) => {
+        for(let i=0;i<list.length;i++){
+          if(list[i].name == lookFor){
+            return list[i].val;
+          }
+        }
+        return 0;
+      }
+
+      areBothWeight = (measure1, measure2) => {
+        //console.log('shouldShowGramList: '+measure1 + ','+measure2)
+        let areBothWeight = false;
+        switch(measure1){
+          case 'g':
+          case 'lb':
+            areBothWeight = (measure2 == 'g' || measure2 == 'lb')
+            break;
+          default:
+            areBothWeight = false; //!(measure2 == 'g' || measure2 == 'lb')
+            break;
+        }
+        //console.log('both weight?' +areBothWeight)
+        return areBothWeight
+      }
+
+      toFraction = (num) => {
+        let decs = num%1;
+        //console.log('******* toFraction: '+num)
+
+        if (decs<.01){
+          if(num<1){
+            return '-'
+          }
+          else {
+            return Math.floor(num)
+          }
+        }
+        else {
+          let eights = Math.round(decs*8);
+          let rem8pos = (decs*8)%1;
+          let rem8neg = Math.abs(1-rem8pos);
+          //console.log('eighths: '+eights + '/8, +'+rem8pos+', -'+rem8neg)
+
+          let threes = Math.round(decs*3);
+          let rem3pos = (decs*3)%1
+          let rem3neg = Math.abs(1-rem3pos)
+          //console.log('thirds: +'+threes+'/3, +'+rem3pos+', -'+rem3neg)
+
+          let rem8 = Math.min(rem8pos,rem8neg)
+          let rem3 = Math.min(rem3pos,rem3neg)
+          //console.log('8s: '+eights+', '+'3s: '+threes)
+          //console.log('rem8: '+Math.round(rem8*1000)/1000+', rem3: '+Math.round(rem3*1000)/1000)
+
+          let integer = Math.floor(num)
+          let returnString = (integer > 0 ? integer+' ' : '');
+          if(rem8<rem3){
+            //console.log('choosing 8ths: '+eights)
+            if(eights > 7){
+              returnString = (integer+1)
+            }
+            else {
+              if((Math.floor(eights/4)>0) && (eights%4 == 0)){
+                //console.log('halves: '+Math.floor(eights/4))
+                returnString += eights/4 + '/2'
+              }
+              else if((Math.floor(eights/2)>0) && (eights%2 == 0)) {
+                //console.log('quarters: '+ Math.floor(eights/2))
+                returnString += eights/2 + '/4'
+              }
+              else {
+                returnString += eights + '/8'
+              }
+            }
+          }
+          else{
+            //console.log('choosing 3rds: '+ threes)
+            if(threes > 2){
+              returnString = (integer+1)
+            }
+            else{
+              returnString += threes+'/3'
+            }
+
+          }
+          //let returnString = (integer > 0 ? integer+ ' ':'') +((rem8<rem3) ? (eights+'/8'):(threes+'/3'))
+
+          return returnString;
+      }
+    }
+
+      toggleFractions = (set) => {
+        //let current = this.state.useFractions;
+        this.setState({useFractions: set})
+      }
+
+      saveRecipe = () => {
+        //convert to readable text
+        const rawText = document.getElementById('fullrecipe').innerHTML;
+        let textRows = rawText.split('</p>')
+        for(let i=0;i<textRows.length;i++){
+          textRows[i] = textRows[i].replace('<p>','')
+        }
+        const finalText = textRows.join('\n')
+
+        //save it to file
+        var text = finalText,
+            blob = new Blob([text], { type: 'text/plain' }),
+            anchor = document.createElement('a');
+
+        anchor.download = "New Recipe.txt";
+        anchor.href = (window.webkitURL || window.URL).createObjectURL(blob);
+        anchor.dataset.downloadurl = ['text/plain', anchor.download, anchor.href].join(':');
+        anchor.click();
+        //thank you liabru! https://gist.github.com/liabru/11263260
+      }
+
+      //<button type='button' onClick={() => this.toggleFractions()}>{this.state.useFractions? 'Use Fractions':'Use Decimals'}</button>
+      render() {
+        return(
+          <div>
+            <h3>Recipe</h3>
+            <hr></hr>
+            <div id='fullrecipe'>
+            {this.state.ingredients.map(row => (
+              <p>{this.writeRow(row)}</p>
+            ))}
+            </div>
+            <span><label className='textSpace'><input type='checkbox' checked={this.state.useFractions} onChange={e => this.toggleFractions(e.target.checked)}/>Use Fractions</label></span>
+            <span style={{'float':'right'}}><button type='button' onClick={() => this.saveRecipe()}>Save</button></span>
+          </div>
+        )
+      }
+    }
+
     ReactDOM.render(
       <div id='background'>
-        <List />
+        <h2>Recipe Multiplier</h2>
+        <h4>Upsize or downsize your recipe, and convert between measures</h4>
+        <hr></hr>
+        <div style={{'float':'left'}}>
+          <List />
+        </div>
       </div>,
       document.getElementById("main")
     );
@@ -356,6 +662,7 @@
     margin: 5px;
     padding: 10px 5px;
     text-align: center;
+    vertical-align: middle;
   }
 
   .resultCell {
@@ -369,6 +676,26 @@
   .linewrap {
     margin-bottom: 10px;
     margin-top: 10px;
+  }
+
+  .recipe {
+    float: right;
+    margin: 20px;
+    padding: 3px;
+    border-style: double;
+    min-width: 300px;
+  }
+
+  .checkbox {
+    width: 130px;
+    display: inline-block;
+  }
+
+  .deleteButton {
+    float:right;
+    vertical-align: middle;
+    color: red;
+    font-weight: bold;
   }
 
 .dropdown {
@@ -467,6 +794,7 @@ body {
 
 input {
   height: 18px;
+  vertical-align: middle;
 }
 
 td {
